@@ -1,0 +1,25 @@
+server_port: 9606
+
+log_config:
+  log_level: INFO
+  log_path: ../log/sys.log
+  max_age: 10
+  rotation_time: 24
+  show_line: true
+  is_brief: false
+  json_format: false
+  log_in_console: false
+
+mysql:
+  user: root
+  password: 123456
+  host: 127.0.0.1
+  port: 3306
+  dbname: chainmscan
+  parameters: charset=utf8mb4&parseTime=True&loc=Local
+  
+gorm_config:
+  max_life_time: 300
+  max_open_conns: 100 
+  max_idle_conns: 10
+  enable_auto_migrate: false

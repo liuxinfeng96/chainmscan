@@ -1,0 +1,22 @@
+FROM golang:1.19 as builder
+ENV GOPROXY=https://goproxy.cn,direct
+COPY . /chainmscan
+COPY ./go.mod /chainmscan/go.mod
+COPY ./go.sum /chainmscan/go.sum
+RUN cd /chainmscan && go build -o chainmscan
+
+# FROM d3fk/nfs-client:v4
+FROM ubuntu:22.04
+# RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+# RUN apt-get update
+# RUN apt-get install nfs-common -y
+COPY --from=builder /chainmscan/chainmscan /chainmscan/chainmscan
+ENV TZ=Asia/Shanghai
+RUN echo "${TZ}" > /etc/timezone \ 
+&& ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \ 
+&& apt update \ 
+&& apt install -y tzdata \ 
+&& rm -rf /var/lib/apt/lists/*
+
+WORKDIR /chainmscan
+VOLUME [ "/chainmscan/log","/chainmscan/conf","/chainmscan/tmp"]
