@@ -114,3 +114,13 @@ func checkStringParamsEmpty(params ...string) error {
 	}
 	return nil
 }
+
+func checkPageReq(p *PageReq) {
+	if p.Page <= 0 {
+		p.Page = 1
+	}
+
+	if p.PageSize <= 0 {
+		p.PageSize = 10
+	}
+}

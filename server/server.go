@@ -106,3 +106,7 @@ func (s *Server) Db() *gorm.DB {
 func (s *Server) SeverPort() string {
 	return s.config.ServerPort
 }
+
+func (s *Server) UploadFilePath() string {
+	return s.config.UploadFilePath
+}

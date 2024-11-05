@@ -18,8 +18,16 @@ var routerList = []struct {
 	// 测试接口
 	{"test", "GET", false, &handler.TestHandler{}},
 
-	// TODO 应用接口注册
+	// 订阅接口
 	{"subscribe", "POST", false, &handler.SubscribeHandler{}},
+	{"subscribeByFile", "POST", false, &handler.SubscribeByFileHandler{}},
+	{"unsubscribe", "POST", false, &handler.UnSubscribeHandler{}},
+	{"upload", "POST", false, &handler.UploadFileHandler{}},
+
+	// 浏览器接口
+	// 区块
+	{"getBlockList", "POST", false, &handler.BlockListHandler{}},
+	{"getBlockDetails", "POST", false, &handler.BlockDetailsHandler{}},
 }
 
 // LoadHttpHandlers 路由通用加载

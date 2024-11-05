@@ -146,12 +146,12 @@ func NewChainmakerClient(config *ClientConfig) (*BlockChainClient, error) {
 
 	client, err := cmsdk.NewChainClient(optionList...)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("create client error, " + err.Error())
 	}
 
 	block, err := client.GetBlockByHeight(0, false)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("get gen block error, " + err.Error())
 	}
 
 	chainGenHash := hex.EncodeToString(block.Block.Hash())

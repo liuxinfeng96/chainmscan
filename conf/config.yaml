@@ -2,7 +2,7 @@ server_port: 9606
 
 log_config:
   log_level: INFO
-  log_path: ../log/sys.log
+  log_path: ./log/sys.log
   max_age: 10
   rotation_time: 24
   show_line: true
@@ -22,4 +22,6 @@ gorm_config:
   max_life_time: 300
   max_open_conns: 100 
   max_idle_conns: 10
-  enable_auto_migrate: false
+  enable_auto_migrate: true
+
+upload_file_path: ./tmp

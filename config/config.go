@@ -13,14 +13,16 @@ import (
 )
 
 type Config struct {
-	ServerPort  string            `mapstructure:"server_port"`
-	LogConfig   *logger.LogConfig `mapstructure:"log_config"`
-	MysqlConfig *db.MysqlConfig   `mapstructure:"mysql"`
-	GormConfig  *db.GormConfig    `mapstructure:"gorm_config"`
+	ServerPort     string            `mapstructure:"server_port"`
+	LogConfig      *logger.LogConfig `mapstructure:"log_config"`
+	MysqlConfig    *db.MysqlConfig   `mapstructure:"mysql"`
+	GormConfig     *db.GormConfig    `mapstructure:"gorm_config"`
+	UploadFilePath string            `mapstructure:"upload_file_path"`
 }
 
 const (
-	DefaultServerPort = "9606"
+	DefaultServerPort     = "9606"
+	DefaultUploadFilePath = "./tmp"
 )
 
 var configLastChangeTime time.Time
@@ -28,7 +30,7 @@ var configLastChangeTime time.Time
 // GetFlagPath --Specify the path and name of the configuration file (flag)
 func GetFlagPath() string {
 	var configPath string
-	flag.StringVar(&configPath, "config", "../conf/config.yaml", "please input the system config file path")
+	flag.StringVar(&configPath, "config", "./conf/config.yaml", "please input the system config file path")
 	flag.Parse()
 	return configPath
 }
@@ -83,6 +85,10 @@ func InitConfig(configPath string) (*Config, error) {
 
 	if len(conf.ServerPort) == 0 {
 		conf.ServerPort = DefaultServerPort
+	}
+
+	if len(conf.UploadFilePath) == 0 {
+		conf.UploadFilePath = DefaultUploadFilePath
 	}
 
 	return &conf, nil

@@ -43,20 +43,23 @@ func ParseBlock(blockInfo *common.BlockInfo) (*BlockData, error) {
 		DagHash:        hex.EncodeToString(blockHeader.DagHash),
 		RwSetRoot:      hex.EncodeToString(blockHeader.RwSetRoot),
 		BlockTimestamp: blockHeader.BlockTimestamp,
-		ProposerOrgId:  blockHeader.Proposer.OrgId,
 		ConsensusArgs:  string(blockHeader.ConsensusArgs),
 	}
 
-	proposerBytes, err := blockHeader.Proposer.Marshal()
-	if err != nil {
-		return nil, err
+	dbBlockDetails := &dbModel.BlockDetails{
+		BlockHash: dbBlock.BlockHash,
+		Dag:       blockInfo.Block.Dag.String(),
 	}
 
-	dbBlockDetails := &dbModel.BlockDetails{
-		BlockHash:         dbBlock.BlockHash,
-		ProposerBytes:     proposerBytes,
-		ProposerSignature: base64.StdEncoding.EncodeToString(blockHeader.Signature),
-		Dag:               blockInfo.Block.Dag.String(),
+	if blockHeader.Proposer != nil {
+		proposerBytes, err := blockHeader.Proposer.Marshal()
+		if err != nil {
+			return nil, err
+		}
+
+		dbBlock.ProposerOrgId = blockHeader.Proposer.OrgId
+		dbBlockDetails.ProposerBytes = proposerBytes
+		dbBlockDetails.ProposerSignature = base64.StdEncoding.EncodeToString(blockHeader.Signature)
 	}
 
 	blockData.Block = dbBlock
@@ -98,7 +101,7 @@ func ParseBlock(blockInfo *common.BlockInfo) (*BlockData, error) {
 
 			if t.Result.ContractResult != nil {
 				txDetails.ContractResultCode = t.Result.ContractResult.Code
-				txDetails.ContractResult = string(t.Result.ContractResult.Result)
+				txDetails.ContractResult = t.Result.ContractResult.Result
 				txDetails.ContractResultMessage = t.Result.ContractResult.Message
 				txDetails.GasUsed = t.Result.ContractResult.GasUsed
 
@@ -186,7 +189,7 @@ func StorageBlock(blockInfo *common.BlockInfo, genHash string, tableNum int,
 	gormDb *gorm.DB) error {
 	blockData, err := ParseBlock(blockInfo)
 	if err != nil {
-		return errors.New("failed to parse block, " + err.Error())
+		return errors.New("fail to parse block, " + err.Error())
 	}
 
 	err = gormDb.Transaction(func(tx *gorm.DB) error {
@@ -243,7 +246,7 @@ func StorageBlock(blockInfo *common.BlockInfo, genHash string, tableNum int,
 		return dao.UpdateChainTxAndBlockAmount(genHash, txAmount, blockAmount, tx)
 	})
 	if err != nil {
-		return errors.New("failed to insert block to db, " + err.Error())
+		return errors.New("fail to insert block to db, " + err.Error())
 	}
 
 	return nil

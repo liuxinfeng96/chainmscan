@@ -2,6 +2,7 @@ package dao
 
 import (
 	dbModel "chainmscan/db/model"
+	"database/sql"
 
 	"gorm.io/gorm"
 )
@@ -62,4 +63,18 @@ func UpdateChainTxAndBlockAmount(genHash string,
 	return gormDb.Table(dbModel.TableName_ChainInfo).
 		Where("gen_hash = ?", genHash).
 		Updates(dbModel.ChainInfo{TxAmount: txAmount, BlockAmount: blockAmount}).Error
+}
+
+func GetChainTxAmount(genHash string, gormDb *gorm.DB) (int64, error) {
+
+	var txAmount sql.NullInt64
+
+	err := gormDb.Table(dbModel.TableName_ChainInfo).
+		Select("tx_amount").
+		Where("gen_hash = ?", genHash).Scan(&txAmount).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return txAmount.Int64, nil
 }

@@ -29,7 +29,7 @@ func NewSubscriber(ctx context.Context, log *zap.SugaredLogger) (*Subscriber, er
 	return s, nil
 }
 
-func (s *Subscriber) Subscribe(c *BlockChainClient, db *gorm.DB) error {
+func (s *Subscriber) Subscribe(c *BlockChainClient, chainName string, db *gorm.DB) error {
 	// 判断是否已经订阅
 	chainGenHash := c.GetChainGenHash()
 
@@ -65,12 +65,14 @@ func (s *Subscriber) Subscribe(c *BlockChainClient, db *gorm.DB) error {
 		// 从0号区块开始订阅
 		blockC, err = c.GetChainMakerClient().SubscribeBlock(s.ctx, 0, -1, false, false)
 		if err != nil {
-			return errors.New("failed to subscribe block, " + err.Error())
+			return errors.New("fail to subscribe block, " + err.Error())
 		}
 
 		chainInfo = new(dbModel.ChainInfo)
 
 		chainInfo.TableNum = tableNum
+		chainInfo.ChainId = c.GetConfig().ChainId
+		chainInfo.GenHash = c.GetChainGenHash()
 
 		err = dao.InsertOneObjectToDB(chainInfo, db)
 		if err != nil {
@@ -85,12 +87,12 @@ func (s *Subscriber) Subscribe(c *BlockChainClient, db *gorm.DB) error {
 
 		maxHeight, err := dao.MaxBlockHeightInDb(chainGenHash, db)
 		if err != nil {
-			return errors.New("failed to get max block height in db, " + err.Error())
+			return errors.New("fail to get max block height in db, " + err.Error())
 		}
 
 		blockC, err = c.GetChainMakerClient().SubscribeBlock(s.ctx, int64(maxHeight+1), -1, false, false)
 		if err != nil {
-			return errors.New("failed to subscribe block, " + err.Error())
+			return errors.New("fail to subscribe block, " + err.Error())
 		}
 
 	}
@@ -114,6 +116,7 @@ func (s *Subscriber) Subscribe(c *BlockChainClient, db *gorm.DB) error {
 		sub = &dbModel.Subscription{}
 	}
 
+	sub.ChainName = chainName
 	sub.GenHash = chainGenHash
 	sub.ChainId = c.GetConfig().ChainId
 	sub.OrgId = c.GetConfig().OrgId
@@ -149,7 +152,7 @@ func (s *Subscriber) Start(gormDb *gorm.DB) error {
 	// 查询订阅配置列表
 	list, err := dao.GetAllSubscription(gormDb)
 	if err != nil {
-		return errors.New("failed to get all subscription, " + err.Error())
+		return errors.New("fail to get all subscription, " + err.Error())
 	}
 	// 依次重新开启订阅
 	for _, v := range list {
@@ -170,6 +173,7 @@ func (s *Subscriber) Start(gormDb *gorm.DB) error {
 			TlsKeyBytes:      []byte(v.TlsKeyPem),
 			TlsCertBytes:     []byte(v.TlsCertPem),
 			ArchiveCenterUrl: v.ArchiveCenterUrl,
+			Logger:           s.log,
 		}
 
 		c, err := NewChainmakerClient(config)
@@ -179,12 +183,12 @@ func (s *Subscriber) Start(gormDb *gorm.DB) error {
 
 		maxHeight, err := dao.MaxBlockHeightInDb(c.GetChainGenHash(), gormDb)
 		if err != nil {
-			return errors.New("failed to get max block height in db, " + err.Error())
+			return errors.New("fail to get max block height in db, " + err.Error())
 		}
 
 		blockC, err := c.GetChainMakerClient().SubscribeBlock(s.ctx, int64(maxHeight+1), -1, false, false)
 		if err != nil {
-			return errors.New("failed to subscribe block, " + err.Error())
+			return errors.New("fail to subscribe block, " + err.Error())
 		}
 
 		chainInfo, err := dao.GetChainInfo(c.GetChainGenHash(), gormDb)
@@ -229,11 +233,10 @@ func (s *Subscriber) startProcess(genHash string, tableNum int,
 					return
 				}
 
-				// 协程池并发存储区块
 				err := StorageBlock(blockInfo, genHash, tableNum, gormDb)
 				if err != nil {
 					closedSignal <- genHash
-					s.log.Errorf("failed to storage block, err: [%s]\n", err.Error())
+					s.log.Errorf("fail to storage block, err: [%s]\n", err.Error())
 					return
 				}
 
