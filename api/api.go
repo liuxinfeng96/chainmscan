@@ -19,6 +19,7 @@ var routerList = []struct {
 	{"test", "GET", false, &handler.TestHandler{}},
 
 	// 订阅接口
+	{"subscriptionList", "GET", false, &handler.SubscriptionListHandler{}},
 	{"subscribe", "POST", false, &handler.SubscribeHandler{}},
 	{"subscribeByFile", "POST", false, &handler.SubscribeByFileHandler{}},
 	{"unsubscribe", "POST", false, &handler.UnSubscribeHandler{}},
@@ -28,6 +29,16 @@ var routerList = []struct {
 	// 区块
 	{"getBlockList", "POST", false, &handler.BlockListHandler{}},
 	{"getBlockDetails", "POST", false, &handler.BlockDetailsHandler{}},
+	// 交易
+	{"getTxList", "POST", false, &handler.TxListHandler{}},
+	{"getTxDetails", "POST", false, &handler.TxDetailsHandler{}},
+	{"getTxAmountByTime", "POST", false, &handler.TxAmountByTimeHandler{}},
+	// 合约
+	{"getContractList", "POST", false, &handler.ContractListHandler{}},
+	{"getContractDetails", "POST", false, &handler.ContractDetailsHandler{}},
+	// 其他
+	{"search", "POST", false, &handler.SearchHandler{}},
+	{"overview", "POST", false, &handler.OverviewHandler{}},
 }
 
 // LoadHttpHandlers 路由通用加载

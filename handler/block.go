@@ -92,6 +92,7 @@ type BlockDetailsReq struct {
 	GenHash     string `json:"genHash"`
 	BlockHeight int64  `json:"blockHeight"`
 	BlockHash   string `json:"blockHash"`
+	Id          int    `json:"id"`
 }
 
 type BlockDetailsResp struct {
@@ -126,7 +127,7 @@ func (h *BlockDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		if len(req.BlockHash) == 0 && req.BlockHeight == -1 {
+		if len(req.BlockHash) == 0 && req.BlockHeight == -1 && req.Id == 0 {
 			FailedJSONResp(RespMsgParamsMissing, c)
 			return
 		}
@@ -137,7 +138,8 @@ func (h *BlockDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		block, tableNum, err := dao.GetBlockInfo(req.GenHash, req.BlockHeight, req.BlockHash, s.Db())
+		block, tableNum, err := dao.GetBlockInfo(req.GenHash, req.BlockHeight, req.BlockHash,
+			req.Id, s.Db())
 		if err != nil {
 			log.Errorf("fail to get block info, err: [%s], req: [%+v]\n", err.Error(), req)
 			FailedJSONResp(RespMsgServerError, c)

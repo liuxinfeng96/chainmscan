@@ -59,7 +59,7 @@ func GetLatestTxListByContractName(genHash string, contractName string, limit in
 	return list, nil
 }
 
-func GetTxInfo(genHash string, txId string,
+func GetTxInfo(genHash string, txId string, id int,
 	gormDb *gorm.DB) (*dbModel.Transaction, int, error) {
 
 	var tx dbModel.Transaction
@@ -69,8 +69,17 @@ func GetTxInfo(genHash string, txId string,
 		return nil, 0, err
 	}
 
-	err = gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Transaction+"_%02d", tableNum)).
-		Where("tx_id = ?", txId).First(&tx).Error
+	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Transaction+"_%02d", tableNum))
+
+	if len(txId) != 0 {
+		queryDb = queryDb.Where("tx_id = ?", txId)
+	}
+
+	if id != 0 {
+		queryDb = queryDb.Where("id = ?", id)
+	}
+
+	err = queryDb.First(&tx).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, 0, nil
@@ -80,4 +89,24 @@ func GetTxInfo(genHash string, txId string,
 	}
 
 	return &tx, tableNum, nil
+}
+
+func GetTxAmountByTime(genHash string,
+	startTime, endTime int64, gormDb *gorm.DB) (int64, error) {
+
+	tableNum, err := getChainTableNum(genHash, gormDb)
+	if err != nil {
+		return 0, err
+	}
+
+	var txAmount int64
+
+	err = gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Transaction+"_%02d", tableNum)).
+		Where("timestamp >= ? AND timestamp < ?", startTime, endTime).
+		Count(&txAmount).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return txAmount, nil
 }

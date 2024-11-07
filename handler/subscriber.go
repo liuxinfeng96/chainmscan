@@ -2,6 +2,7 @@ package handler
 
 import (
 	"chainmscan/blockchain"
+	"chainmscan/db/dao"
 	"chainmscan/server"
 	"os"
 	"path"
@@ -239,6 +240,45 @@ func (h *SubscribeByFileHandler) Handle(s *server.Server) gin.HandlerFunc {
 		}
 
 		SuccessfulJSONResp(client.GetChainGenHash(), "", c)
+	}
+}
+
+type SubscriptionListHandler struct {
+}
+
+type SubscriptionListResp struct {
+	GenHash   string `json:"genHash"`
+	ChainName string `json:"chainName"`
+	ChainId   string `json:"chainId"`
+}
+
+func (h *SubscriptionListHandler) Handle(s *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		log, err := s.GetZapLogger("SubscriptionListHandler")
+		if err != nil {
+			FailedJSONResp(RespMsgLogServerError, c)
+			return
+		}
+
+		list, err := dao.GetAllSubscription(s.Db())
+		if err != nil {
+			log.Errorf("fail to get all subscription, err: [%s]\n", err.Error())
+			FailedJSONResp(RespMsgServerError, c)
+			return
+		}
+
+		resp := make([]*SubscriptionListResp, 0)
+
+		for _, v := range list {
+			resp = append(resp, &SubscriptionListResp{
+				GenHash:   v.GenHash,
+				ChainId:   v.ChainId,
+				ChainName: v.ChainName,
+			})
+		}
+
+		SuccessfulJSONResp(resp, "", c)
 	}
 }
 

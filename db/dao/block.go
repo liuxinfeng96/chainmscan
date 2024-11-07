@@ -57,7 +57,7 @@ func GetBlockList(genHash string, page, pageSize int32,
 	return list, nil
 }
 
-func GetBlockInfo(genHash string, blockHeight int64, blockHash string,
+func GetBlockInfo(genHash string, blockHeight int64, blockHash string, id int,
 	gormDb *gorm.DB) (*dbModel.Block, int, error) {
 
 	var block dbModel.Block
@@ -75,6 +75,10 @@ func GetBlockInfo(genHash string, blockHeight int64, blockHash string,
 
 	if len(blockHash) == 0 && blockHeight > -1 {
 		queryDb = queryDb.Where("block_height = ?", blockHeight)
+	}
+
+	if id != 0 {
+		queryDb = queryDb.Where("id = ?", id)
 	}
 
 	err = queryDb.First(&block).Error
