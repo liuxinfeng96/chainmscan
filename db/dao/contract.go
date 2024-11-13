@@ -60,7 +60,7 @@ func GetContractInfo(genHash string, contractName string, id uint,
 	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Contract+"_%02d", tableNum))
 
 	if len(contractName) != 0 {
-		queryDb = queryDb.Where("contract_name = ?", contractName).Order("tx_timestamp DESC")
+		queryDb = queryDb.Where("name = ?", contractName).Order("tx_timestamp DESC")
 	}
 
 	if id != 0 {
