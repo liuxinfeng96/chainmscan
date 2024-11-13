@@ -65,7 +65,6 @@ func GetContractInfo(genHash string, contractName string, id uint,
 
 	if id != 0 {
 		queryDb = queryDb.Where("id = ?", id).Order("tx_timestamp DESC")
-
 	}
 
 	err = queryDb.First(&contract).Error

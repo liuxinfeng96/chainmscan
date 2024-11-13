@@ -55,6 +55,16 @@ func (h *SearchHandler) Handle(s *server.Server) gin.HandlerFunc {
 					return
 				}
 			}
+
+			contract, _ := dao.GetContractInfo(req.GenHash, req.Keyword, 0, s.Db())
+			if contract != nil {
+				SuccessfulJSONResp(&SearchResp{
+					Id:   contract.ID,
+					Type: SearchType_Contract,
+				}, "", c)
+				return
+			}
+
 		} else {
 			tx, _, _ := dao.GetTxInfo(req.GenHash, req.Keyword, 0, s.Db())
 			if tx != nil {
