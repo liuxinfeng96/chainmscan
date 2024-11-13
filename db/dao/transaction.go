@@ -17,6 +17,10 @@ func GetTxList(genHash string, page, pageSize int32, blockHeight int64,
 		return list, err
 	}
 
+	if tableNum == 0 {
+		return nil, nil
+	}
+
 	offset := (page - 1) * pageSize
 
 	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Transaction+"_%02d", tableNum))
@@ -43,6 +47,10 @@ func GetLatestTxListByContractName(genHash string, contractName string, page, pa
 	tableNum, err := getChainTableNum(genHash, gormDb)
 	if err != nil {
 		return list, err
+	}
+
+	if tableNum == 0 {
+		return nil, nil
 	}
 
 	offset := (page - 1) * pageSize
@@ -95,6 +103,10 @@ func GetTxInfo(genHash string, txId string, id int,
 		return nil, 0, err
 	}
 
+	if tableNum == 0 {
+		return nil, 0, nil
+	}
+
 	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Transaction+"_%02d", tableNum))
 
 	if len(txId) != 0 {
@@ -123,6 +135,10 @@ func GetTxAmountByTime(genHash string,
 	tableNum, err := getChainTableNum(genHash, gormDb)
 	if err != nil {
 		return 0, err
+	}
+
+	if tableNum == 0 {
+		return 0, nil
 	}
 
 	var txAmount int64

@@ -17,6 +17,10 @@ func GetContractList(genHash string, page, pageSize int32,
 		return list, 0, err
 	}
 
+	if tableNum == 0 {
+		return nil, 0, nil
+	}
+
 	var total int64
 
 	sql1 := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Contract+"_%02d", tableNum)).
@@ -47,6 +51,10 @@ func GetContractInfo(genHash string, contractName string, id uint,
 	tableNum, err := getChainTableNum(genHash, gormDb)
 	if err != nil {
 		return nil, err
+	}
+
+	if tableNum == 0 {
+		return nil, nil
 	}
 
 	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Contract+"_%02d", tableNum))

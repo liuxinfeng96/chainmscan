@@ -59,14 +59,19 @@ func (h *BlockListHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
+		resp := make([]*BlockListResp, 0)
+
+		if list == nil {
+			SuccessfulJSONRespWithPage(resp, 0, c)
+			return
+		}
+
 		chainInfo, err := dao.GetChainInfo(req.GenHash, s.Db())
 		if err != nil {
 			log.Errorf("fail to get chainInfo, err: [%s], genHash: [%s]\n", err.Error(), req.GenHash)
 			FailedJSONResp(RespMsgServerError, c)
 			return
 		}
-
-		resp := make([]*BlockListResp, 0)
 
 		for _, v := range list {
 			bl := &BlockListResp{

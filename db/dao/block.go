@@ -45,6 +45,10 @@ func GetBlockList(genHash string, page, pageSize int32,
 		return list, err
 	}
 
+	if tableNum == 0 {
+		return nil, nil
+	}
+
 	offset := (page - 1) * pageSize
 
 	err = gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Block+"_%02d", tableNum)).
@@ -65,6 +69,10 @@ func GetBlockInfo(genHash string, blockHeight int64, blockHash string, id int,
 	tableNum, err := getChainTableNum(genHash, gormDb)
 	if err != nil {
 		return nil, 0, err
+	}
+
+	if tableNum == 0 {
+		return nil, 0, nil
 	}
 
 	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Block+"_%02d", tableNum))

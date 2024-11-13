@@ -61,6 +61,11 @@ func (h *ContractListHandler) Handle(s *server.Server) gin.HandlerFunc {
 
 		resp := make([]*ContractListResp, 0)
 
+		if list == nil {
+			SuccessfulJSONRespWithPage(resp, 0, c)
+			return
+		}
+
 		for _, v := range list {
 			bl := &ContractListResp{
 				Id:           v.ID,
@@ -129,6 +134,11 @@ func (h *ContractDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 			log.Errorf("fail to get contract info, err: [%s], contractId: [%d]\n", err.Error(),
 				req.GenHash, req.ContractId)
 			FailedJSONResp(RespMsgServerError, c)
+			return
+		}
+
+		if contract == nil {
+			SuccessfulJSONResp(&ContractDetailsResp{}, "", c)
 			return
 		}
 

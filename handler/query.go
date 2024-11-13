@@ -123,8 +123,7 @@ func (h *OverviewHandler) Handle(s *server.Server) gin.HandlerFunc {
 		}
 
 		if chainInfo == nil {
-			log.Errorf("fail to get chain info, the chain info does not exist, genHash: [%s]\n", req.GenHash)
-			FailedJSONResp(RespMsgServerError, c)
+			SuccessfulJSONResp(&OverviewResp{}, "", c)
 			return
 		}
 

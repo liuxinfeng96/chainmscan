@@ -68,6 +68,13 @@ func (h *TxListHandler) Handle(s *server.Server) gin.HandlerFunc {
 				return
 			}
 
+			resp := make([]*TxListResp, 0)
+
+			if txList == nil {
+				SuccessfulJSONRespWithPage(resp, 0, c)
+				return
+			}
+
 			txCount, err := dao.GetLatestTxCountByContractName(req.GenHash, req.ContractName, TxListByContractNameCount, s.Db())
 			if err != nil {
 				log.Errorf("fail to get tx count by contract, err: [%s], genHash: [%s], contractName: [%s]\n",
@@ -75,8 +82,6 @@ func (h *TxListHandler) Handle(s *server.Server) gin.HandlerFunc {
 				FailedJSONResp(RespMsgServerError, c)
 				return
 			}
-
-			resp := make([]*TxListResp, 0)
 
 			for _, v := range txList {
 				tlreq := &TxListResp{
@@ -107,6 +112,11 @@ func (h *TxListHandler) Handle(s *server.Server) gin.HandlerFunc {
 			}
 
 			resp := make([]*TxListResp, 0)
+
+			if txList == nil {
+				SuccessfulJSONRespWithPage(resp, 0, c)
+				return
+			}
 
 			for _, v := range txList {
 				tlreq := &TxListResp{
