@@ -54,7 +54,7 @@ docker run -d \
     --restart always \
     --privileged \
     chainmscan-server:$version \
-    bash -c "cd src && ./chainmscan -config ../conf/config.yaml"
+    bash -c "./chainmscan -config ./conf/config.yaml"
 sleep 2s
 docker logs chainmscan-server-$version
 echo "the server has been started!"
