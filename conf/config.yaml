@@ -1,4 +1,4 @@
-server_port: 9606
+server_port: 9660
 
 log_config:
   log_level: INFO
@@ -14,7 +14,7 @@ mysql:
   user: root
   password: 123456
   host: 127.0.0.1
-  port: 3306
+  port: 33065
   dbname: chainmscan
   parameters: charset=utf8mb4&parseTime=True&loc=Local
   

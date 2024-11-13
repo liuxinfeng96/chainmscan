@@ -21,7 +21,7 @@ type Config struct {
 }
 
 const (
-	DefaultServerPort     = "9606"
+	DefaultServerPort     = "9660"
 	DefaultUploadFilePath = "./tmp"
 )
 

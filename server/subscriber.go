@@ -13,3 +13,7 @@ func (s *Server) Subscribe(c *blockchain.BlockChainClient, chainName string, db 
 func (s *Server) UnSubscribe(genHash string, db *gorm.DB) error {
 	return s.subscriber.Unsubscribe(genHash, db)
 }
+
+func (s *Server) GetChainList() []string {
+	return s.subscriber.GetChainList()
+}

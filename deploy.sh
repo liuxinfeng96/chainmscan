@@ -19,7 +19,7 @@ if test -z $c; then
 echo "not found the mysql server, start mysql server..."
 
 docker run -d \
-    -p 3306:3306 \
+    -p 33065:3306 \
     -v $path/conf/my.cnf:/etc/mysql/mysql.conf.d/my.cnf \
     -v $path/../chainmscan-data:/var/lib/mysql \
     -e MYSQL_ROOT_PASSWORD=123456 \
@@ -40,7 +40,7 @@ fi
 
 echo "start the server..."
 docker run -d \
-    -p 9606:9606 \
+    -p 9660:9660 \
     -w /chainmscan \
     -v $path/conf:/chainmscan/conf \
     -v $path/log:/chainmscan/log \

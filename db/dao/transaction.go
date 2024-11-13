@@ -35,7 +35,7 @@ func GetTxList(genHash string, page, pageSize int32, blockHeight int64,
 	return list, nil
 }
 
-func GetLatestTxListByContractName(genHash string, contractName string, limit int,
+func GetLatestTxListByContractName(genHash string, contractName string, page, pageSize int32,
 	gormDb *gorm.DB) ([]*dbModel.Transaction, error) {
 
 	var list []*dbModel.Transaction
@@ -45,18 +45,44 @@ func GetLatestTxListByContractName(genHash string, contractName string, limit in
 		return list, err
 	}
 
+	offset := (page - 1) * pageSize
+
 	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Transaction+"_%02d", tableNum))
 
 	if len(contractName) != 0 {
 		queryDb = queryDb.Where("contract_name = ?", contractName)
 	}
 
-	err = queryDb.Limit(limit).Order("timestamp desc").Find(&list).Error
+	err = queryDb.Limit(int(pageSize)).Offset(int(offset)).Order("timestamp desc").Find(&list).Error
 	if err != nil {
 		return list, err
 	}
 
 	return list, nil
+}
+
+func GetLatestTxCountByContractName(genHash string, contractName string, limit int,
+	gormDb *gorm.DB) (int64, error) {
+
+	var txCount int64
+
+	tableNum, err := getChainTableNum(genHash, gormDb)
+	if err != nil {
+		return 0, err
+	}
+
+	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Transaction+"_%02d", tableNum))
+
+	if len(contractName) != 0 {
+		queryDb = queryDb.Where("contract_name = ?", contractName)
+	}
+
+	err = queryDb.Limit(limit).Count(&txCount).Error
+	if err != nil {
+		return 0, err
+	}
+
+	return txCount, nil
 }
 
 func GetTxInfo(genHash string, txId string, id int,

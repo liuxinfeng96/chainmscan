@@ -18,6 +18,7 @@ type BlockListReq struct {
 }
 
 type BlockListResp struct {
+	Id             uint   `json:"id"`
 	BlockHeight    uint64 `json:"blockHeight"`
 	BlockHash      string `json:"blockHash"`
 	ChainId        string `json:"chainId"`
@@ -69,6 +70,7 @@ func (h *BlockListHandler) Handle(s *server.Server) gin.HandlerFunc {
 
 		for _, v := range list {
 			bl := &BlockListResp{
+				Id:             v.ID,
 				BlockHeight:    v.BlockHeight,
 				BlockHash:      v.BlockHash,
 				ChainId:        v.ChainId,
@@ -143,6 +145,11 @@ func (h *BlockDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 		if err != nil {
 			log.Errorf("fail to get block info, err: [%s], req: [%+v]\n", err.Error(), req)
 			FailedJSONResp(RespMsgServerError, c)
+			return
+		}
+
+		if block == nil {
+			SuccessfulJSONResp(&BlockDetailsResp{}, "", nil)
 			return
 		}
 

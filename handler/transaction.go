@@ -5,7 +5,9 @@ import (
 	"chainmscan/server"
 	"time"
 
+	"chainmaker.org/chainmaker/pb-go/v2/common"
 	"github.com/gin-gonic/gin"
+	"github.com/gogo/protobuf/proto"
 )
 
 type TxListHandler struct {
@@ -21,6 +23,7 @@ type TxListReq struct {
 }
 
 type TxListResp struct {
+	Id           uint   `json:"id"`
 	TxId         string `json:"txId"`
 	BlockHeight  uint64 `json:"blockHeight"`
 	ChainId      string `json:"chainId"`
@@ -57,9 +60,17 @@ func (h *TxListHandler) Handle(s *server.Server) gin.HandlerFunc {
 
 		if len(req.ContractName) != 0 {
 			// 通过合约查询交易，考虑性能，只提供最新100条交易列表
-			txList, err := dao.GetLatestTxListByContractName(req.GenHash, req.ContractName, TxListByContractNameCount, s.Db())
+			txList, err := dao.GetLatestTxListByContractName(req.GenHash, req.ContractName, req.Page, req.PageSize, s.Db())
 			if err != nil {
 				log.Errorf("fail to get tx by contract, err: [%s], genHash: [%s], contractName: [%s]\n",
+					err.Error(), req.GenHash, req.ContractName)
+				FailedJSONResp(RespMsgServerError, c)
+				return
+			}
+
+			txCount, err := dao.GetLatestTxCountByContractName(req.GenHash, req.ContractName, TxListByContractNameCount, s.Db())
+			if err != nil {
+				log.Errorf("fail to get tx count by contract, err: [%s], genHash: [%s], contractName: [%s]\n",
 					err.Error(), req.GenHash, req.ContractName)
 				FailedJSONResp(RespMsgServerError, c)
 				return
@@ -69,6 +80,7 @@ func (h *TxListHandler) Handle(s *server.Server) gin.HandlerFunc {
 
 			for _, v := range txList {
 				tlreq := &TxListResp{
+					Id:           v.ID,
 					TxId:         v.TxId,
 					BlockHeight:  v.BlockHeight,
 					ChainId:      v.ChainId,
@@ -83,7 +95,7 @@ func (h *TxListHandler) Handle(s *server.Server) gin.HandlerFunc {
 				resp = append(resp, tlreq)
 			}
 
-			SuccessfulJSONRespWithPage(resp, TxListByContractNameCount, c)
+			SuccessfulJSONRespWithPage(resp, txCount, c)
 
 		} else {
 			txList, err := dao.GetTxList(req.GenHash, req.Page, req.PageSize, req.BlockHeight, s.Db())
@@ -98,6 +110,7 @@ func (h *TxListHandler) Handle(s *server.Server) gin.HandlerFunc {
 
 			for _, v := range txList {
 				tlreq := &TxListResp{
+					Id:           v.ID,
 					TxId:         v.TxId,
 					BlockHeight:  v.BlockHeight,
 					ChainId:      v.ChainId,
@@ -159,6 +172,7 @@ type TxDetailsResp struct {
 	ExpirationTime        int64  `json:"expirationTime"`
 	GasLimit              uint64 `json:"gasLimit"`
 	SenderOrgId           string `json:"senderOrgId"`
+	SenderInfo            string `json:"senderInfo"`
 	TxStatusCode          string `json:"txStatusCode"`
 	TxParameters          string `json:"txParameters"`
 	RwSetHash             string `json:"rwSetHash"`
@@ -178,7 +192,7 @@ func (h *TxDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		err := checkStringParamsEmpty(req.GenHash, req.TxId)
+		err := checkStringParamsEmpty(req.GenHash)
 		if err != nil {
 			FailedJSONResp(RespMsgParamsMissing, c)
 			return
@@ -203,12 +217,29 @@ func (h *TxDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		txDetails, err := dao.GetTxDetails(req.TxId, tableNum, s.Db())
+		if txInfo == nil {
+			SuccessfulJSONResp(&TxDetailsResp{}, "", nil)
+			return
+		}
+
+		txDetails, err := dao.GetTxDetails(txInfo.TxId, tableNum, s.Db())
 		if err != nil {
 			log.Errorf("fail to get tx details, err: [%s], genHash: [%s], txId: [%s]\n",
 				err.Error(), req.GenHash, req.TxId)
 			FailedJSONResp(RespMsgServerError, c)
 			return
+		}
+
+		var sender common.EndorsementEntry
+
+		if len(txDetails.SenderBytes) != 0 {
+			err := proto.Unmarshal(txDetails.SenderBytes, &sender)
+			if err != nil {
+				log.Errorf("fail to unmarshal the sender bytes, err: [%s], genHash: [%s], txId: [%s]\n",
+					err.Error(), req.GenHash, req.TxId)
+				FailedJSONResp(RespMsgServerError, c)
+				return
+			}
 		}
 
 		resp := &TxDetailsResp{
@@ -230,6 +261,7 @@ func (h *TxDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 			ContractResult:        string(txDetails.ContractResult),
 			ContractResultMessage: txDetails.ContractResultMessage,
 			GasUsed:               txDetails.GasUsed,
+			SenderInfo:            string(sender.Signer.MemberInfo),
 		}
 
 		SuccessfulJSONResp(resp, "", c)

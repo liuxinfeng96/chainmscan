@@ -84,12 +84,12 @@ type ContractDetailsHandler struct {
 }
 
 type ContractDetailsReq struct {
-	GenHash    string `json:"genHash"`
-	ContractId uint   `json:"contractId"`
+	GenHash      string `json:"genHash"`
+	ContractId   uint   `json:"contractId"`
+	ContractName string `json:"contractName"`
 }
 
 type ContractDetailsResp struct {
-	Id           uint   `json:"id"`
 	Name         string `json:"name"`
 	Version      string `json:"version"`
 	ChainId      string `json:"chainId"`
@@ -118,18 +118,13 @@ func (h *ContractDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		if req.ContractId == 0 {
-			FailedJSONResp(RespMsgParamsMissing, c)
-			return
-		}
-
 		log, err := s.GetZapLogger("ContractDetailsHandler")
 		if err != nil {
 			FailedJSONResp(RespMsgLogServerError, c)
 			return
 		}
 
-		contract, err := dao.GetContractInfo(req.GenHash, req.ContractId, s.Db())
+		contract, err := dao.GetContractInfo(req.GenHash, req.ContractName, req.ContractId, s.Db())
 		if err != nil {
 			log.Errorf("fail to get contract info, err: [%s], contractId: [%d]\n", err.Error(),
 				req.GenHash, req.ContractId)
@@ -148,7 +143,6 @@ func (h *ContractDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 		}
 
 		resp := &ContractDetailsResp{
-			Id:           contract.ID,
 			Name:         contract.Name,
 			Version:      contract.Version,
 			ChainId:      contract.ChainId,

@@ -23,6 +23,7 @@ var routerList = []struct {
 	{"subscribe", "POST", false, &handler.SubscribeHandler{}},
 	{"subscribeByFile", "POST", false, &handler.SubscribeByFileHandler{}},
 	{"unsubscribe", "POST", false, &handler.UnSubscribeHandler{}},
+
 	{"upload", "POST", false, &handler.UploadFileHandler{}},
 
 	// 浏览器接口
@@ -51,7 +52,7 @@ func LoadHttpHandlers(s *server.Server) error {
 	}
 
 	s.GinEngine().Use(logger.GinLogger(ginLogger))
-	s.GinEngine().Use(logger.GinRecovery(ginLogger, true))
+	//	s.GinEngine().Use(logger.GinRecovery(ginLogger, true))
 
 	for _, r := range routerList {
 		switch r.method {

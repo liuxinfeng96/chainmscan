@@ -267,3 +267,16 @@ func (s *Subscriber) listen(closedSignal <-chan string) {
 		}
 	}()
 }
+
+func (s *Subscriber) GetChainList() []string {
+	s.chainListMapMutex.Lock()
+	defer s.chainListMapMutex.Unlock()
+
+	var list []string
+
+	for k := range s.chainList {
+		list = append(list, k)
+	}
+
+	return list
+}

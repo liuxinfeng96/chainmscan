@@ -73,12 +73,12 @@ func GetBlockInfo(genHash string, blockHeight int64, blockHash string, id int,
 		queryDb = queryDb.Where("block_hash = ?", blockHash)
 	}
 
-	if len(blockHash) == 0 && blockHeight > -1 {
-		queryDb = queryDb.Where("block_height = ?", blockHeight)
-	}
-
 	if id != 0 {
 		queryDb = queryDb.Where("id = ?", id)
+	}
+
+	if len(blockHash) == 0 && blockHeight > -1 && id == 0 {
+		queryDb = queryDb.Where("block_height = ?", blockHeight)
 	}
 
 	err = queryDb.First(&block).Error

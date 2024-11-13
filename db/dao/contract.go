@@ -39,7 +39,7 @@ func GetContractList(genHash string, page, pageSize int32,
 	return list, total, nil
 }
 
-func GetContractInfo(genHash string, id uint,
+func GetContractInfo(genHash string, contractName string, id uint,
 	gormDb *gorm.DB) (*dbModel.Contract, error) {
 
 	var contract dbModel.Contract
@@ -49,8 +49,18 @@ func GetContractInfo(genHash string, id uint,
 		return nil, err
 	}
 
-	err = gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Contract+"_%02d", tableNum)).
-		Where("id = ?", id).First(&contract).Error
+	queryDb := gormDb.Table(fmt.Sprintf(dbModel.TableNamePrefix_Contract+"_%02d", tableNum))
+
+	if len(contractName) != 0 {
+		queryDb = queryDb.Where("contract_name = ?", contractName).Order("tx_timestamp DESC")
+	}
+
+	if id != 0 {
+		queryDb = queryDb.Where("id = ?", id).Order("tx_timestamp DESC")
+
+	}
+
+	err = queryDb.First(&contract).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil

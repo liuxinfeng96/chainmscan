@@ -247,9 +247,8 @@ type SubscriptionListHandler struct {
 }
 
 type SubscriptionListResp struct {
-	GenHash   string `json:"genHash"`
-	ChainName string `json:"chainName"`
-	ChainId   string `json:"chainId"`
+	GenHash string `json:"genHash"`
+	ChainId string `json:"chainId"`
 }
 
 func (h *SubscriptionListHandler) Handle(s *server.Server) gin.HandlerFunc {
@@ -261,20 +260,28 @@ func (h *SubscriptionListHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		list, err := dao.GetAllSubscription(s.Db())
-		if err != nil {
-			log.Errorf("fail to get all subscription, err: [%s]\n", err.Error())
-			FailedJSONResp(RespMsgServerError, c)
-			return
-		}
+		chainList := s.GetChainList()
 
 		resp := make([]*SubscriptionListResp, 0)
 
-		for _, v := range list {
+		for _, v := range chainList {
+			chain, err := dao.GetChainInfo(v, s.Db())
+			if err != nil {
+				log.Errorf("fail to get chain info, err: [%s], genHash: [%s]\n",
+					err.Error(), v)
+				FailedJSONResp(RespMsgServerError, c)
+				return
+			}
+
+			if chain == nil {
+				log.Errorf("the chain does not exist, genHash: [%s]\n", v)
+				FailedJSONResp(RespMsgServerError, c)
+				return
+			}
+
 			resp = append(resp, &SubscriptionListResp{
-				GenHash:   v.GenHash,
-				ChainId:   v.ChainId,
-				ChainName: v.ChainName,
+				GenHash: chain.GenHash,
+				ChainId: chain.ChainId + "@" + chain.GenHash,
 			})
 		}
 

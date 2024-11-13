@@ -63,7 +63,7 @@ func SuccessfulJSONResp(data interface{}, msg string, c *gin.Context) {
 func SuccessfulJSONRespWithPage(data interface{}, total int64, c *gin.Context) {
 	resp := StandardRespWithPage{
 		StandardResp: StandardResp{
-			Code: RespCodeFailed,
+			Code: RespCodeSuccess,
 			Data: data,
 		},
 		Total: total,

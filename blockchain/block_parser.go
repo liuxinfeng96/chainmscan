@@ -163,6 +163,7 @@ func ParseBlock(blockInfo *common.BlockInfo) (*BlockData, error) {
 			if err != nil {
 				return nil, err
 			}
+			tx.SenderOrgId = t.Sender.Signer.OrgId
 			txDetails.SenderBytes = senderBytes
 		}
 
