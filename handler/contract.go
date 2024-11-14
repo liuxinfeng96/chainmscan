@@ -159,7 +159,7 @@ func (h *ContractDetailsHandler) Handle(s *server.Server) gin.HandlerFunc {
 			RuntimeType:  contract.RuntimeType,
 			State:        contract.State,
 			CreatorOrgId: contract.CreatorOrgId,
-			Address:      contract.CreatorOrgId,
+			Address:      contract.Address,
 			TxId:         contract.TxId,
 			Height:       contract.Height,
 			TxTimestamp:  contract.TxTimestamp,
