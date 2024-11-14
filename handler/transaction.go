@@ -100,7 +100,7 @@ func (h *TxListHandler) Handle(s *server.Server) gin.HandlerFunc {
 				resp = append(resp, tlreq)
 			}
 
-			SuccessfulJSONRespWithPage(resp, txCount, c)
+			SuccessfulJSONRespWithPage(resp, int64(txCount), c)
 
 		} else {
 			txList, err := dao.GetTxList(req.GenHash, req.Page, req.PageSize, req.BlockHeight, s.Db())

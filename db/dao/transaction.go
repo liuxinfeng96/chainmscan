@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"chainmscan/db/model"
 	dbModel "chainmscan/db/model"
 	"fmt"
 
@@ -70,9 +71,9 @@ func GetLatestTxListByContractName(genHash string, contractName string, page, pa
 }
 
 func GetLatestTxCountByContractName(genHash string, contractName string, limit int,
-	gormDb *gorm.DB) (int64, error) {
+	gormDb *gorm.DB) (int, error) {
 
-	var txCount int64
+	var txList []*model.Transaction
 
 	tableNum, err := getChainTableNum(genHash, gormDb)
 	if err != nil {
@@ -85,12 +86,16 @@ func GetLatestTxCountByContractName(genHash string, contractName string, limit i
 		queryDb = queryDb.Where("contract_name = ?", contractName)
 	}
 
-	err = queryDb.Limit(limit).Count(&txCount).Error
+	err = queryDb.Limit(limit).Find(&txList).Error
 	if err != nil {
 		return 0, err
 	}
 
-	return txCount, nil
+	if len(txList) < limit {
+		return len(txList), nil
+	}
+
+	return limit, nil
 }
 
 func GetTxInfo(genHash string, txId string, id int,
