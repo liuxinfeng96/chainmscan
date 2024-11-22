@@ -77,7 +77,7 @@ func (h *SubscribeHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		err = s.Subscribe(client, req.ChainName, s.Db())
+		err = s.Subscribe(client, req.ChainName)
 		if err != nil {
 			log.Errorf("fail to subscribe, err: [%s], genHash: [%s]\n",
 				err.Error(), client.GetChainGenHash())
@@ -231,7 +231,7 @@ func (h *SubscribeByFileHandler) Handle(s *server.Server) gin.HandlerFunc {
 			return
 		}
 
-		err = s.Subscribe(client, req.ChainName, s.Db())
+		err = s.Subscribe(client, req.ChainName)
 		if err != nil {
 			log.Errorf("fail to subscribe, err: [%s], genHash: [%s]\n",
 				err.Error(), client.GetChainGenHash())
